@@ -1,0 +1,3135 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GURAY's HYPERTROPHY Takip Uygulaması</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #4e73ff;
+            --secondary: #8a3ffc;
+            --accent: #00c9b7;
+            --dark: #121826;
+            --darker: #0d111c;
+            --light: #f8f9fa;
+            --light-gray: #e9ecef;
+            --gray: #6c757d;
+            --success: #06d6a0;
+            --warning: #ffd166;
+            --danger: #ef476f;
+            --diet: #ff9e00;
+            --card-bg: rgba(26, 30, 48, 0.85);
+            --card-border: rgba(78, 115, 255, 0.15);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo h1 {
+            font-size: 28px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .logo span {
+            font-size: 14px;
+            background: var(--secondary);
+            color: white;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        nav ul {
+            display: flex;
+            gap: 15px;
+            list-style: none;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--light-gray);
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+        }
+        
+        nav a:hover, nav a.active {
+            background: rgba(78, 115, 255, 0.15);
+            color: var(--primary);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px 15px;
+            border-radius: 30px;
+            background: rgba(78, 115, 255, 0.1);
+        }
+        
+        .user-info:hover {
+            background: rgba(78, 115, 255, 0.2);
+        }
+        
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: white;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 25px;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--card-border);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-title i {
+            background: rgba(78, 115, 255, 0.2);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--primary);
+        }
+        
+        .workout-plan {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .workout-day {
+            background: rgba(30, 34, 54, 0.8);
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 2px solid transparent;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .workout-day.completed {
+            background: rgba(6, 214, 160, 0.12);
+            border: 2px solid rgba(6, 214, 160, 0.3);
+        }
+        
+        .workout-day.completed .complete-btn {
+            background: var(--success);
+            color: var(--dark);
+        }
+        
+        .workout-day.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--success);
+            color: var(--dark);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 3px 10px rgba(6, 214, 160, 0.3);
+        }
+        
+        .workout-day:hover {
+            transform: translateY(-7px);
+            background: rgba(78, 115, 255, 0.15);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .day-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: var(--accent);
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .day-title i {
+            background: var(--accent);
+            color: var(--dark);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .exercise {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 14px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid var(--primary);
+        }
+        
+        .exercise:hover {
+            background: rgba(78, 115, 255, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .exercise-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--light);
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+        }
+        
+        .exercise-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--light-gray);
+        }
+        
+        .exercise-info {
+            position: absolute;
+            background: rgba(18, 22, 36, 0.95);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            z-index: 10;
+            display: none;
+            border: 1px solid var(--primary);
+            max-width: 300px;
+            font-size: 14px;
+        }
+        
+        .log-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(78, 115, 255, 0.2);
+            color: var(--primary);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .log-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .complete-btn {
+            width: 100%;
+            margin-top: 15px;
+            background: rgba(78, 115, 255, 0.2);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 10px 15px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .complete-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .progress-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .progress-chart {
+            height: 300px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .stat-card {
+            background: rgba(30, 34, 54, 0.8);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(78, 115, 255, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 10px 0;
+            color: var(--primary);
+            text-shadow: 0 2px 5px rgba(78, 115, 255, 0.3);
+        }
+        
+        .stat-label {
+            color: var(--light-gray);
+            font-size: 14px;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(78, 115, 255, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(78, 115, 255, 0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            box-shadow: none;
+        }
+        
+        .btn-outline:hover {
+            background: rgba(78, 115, 255, 0.1);
+            box-shadow: 0 4px 10px rgba(78, 115, 255, 0.2);
+        }
+        
+        .recent-workouts .workout-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.3s ease;
+        }
+        
+        .recent-workouts .workout-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .workout-date {
+            color: var(--light-gray);
+            font-size: 14px;
+        }
+        
+        .workout-type {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .workout-stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .workout-stat {
+            background: rgba(78, 115, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--primary);
+        }
+        
+        .sidebar .card {
+            margin-bottom: 25px;
+        }
+        
+        .next-workout {
+            background: rgba(6, 214, 160, 0.12);
+            border: 1px solid rgba(6, 214, 160, 0.2);
+        }
+        
+        .next-workout .card-title {
+            color: var(--success);
+        }
+        
+        .program-info {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--light-gray);
+        }
+        
+        .program-info ul {
+            padding-left: 0;
+            list-style: none;
+        }
+        
+        .program-info li {
+            margin-bottom: 12px;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .program-info li::before {
+            content: "•";
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+            font-size: 20px;
+            line-height: 1;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: rgba(18, 22, 36, 0.95);
+            border-radius: 18px;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            position: relative;
+            border: 1px solid var(--primary);
+            animation: modalOpen 0.4s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        @keyframes modalOpen {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .close-modal:hover {
+            color: var(--primary);
+            transform: rotate(90deg);
+            background: rgba(78, 115, 255, 0.1);
+        }
+        
+        .modal-title {
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--light-gray);
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 18px;
+            border-radius: 10px;
+            background: rgba(30, 34, 54, 0.8);
+            border: 1px solid rgba(78, 115, 255, 0.3);
+            color: var(--light);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(78, 115, 255, 0.2);
+        }
+        
+        .sets-container {
+            margin-top: 10px;
+        }
+        
+        .set-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .set-row input {
+            flex: 1;
+            padding: 10px 15px;
+        }
+        
+        .add-set {
+            background: rgba(78, 115, 255, 0.1);
+            color: var(--primary);
+            border: 1px dashed var(--primary);
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 5px;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .add-set:hover {
+            background: rgba(78, 115, 255, 0.2);
+        }
+        
+        .save-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px;
+            font-size: 16px;
+        }
+        
+        .personal-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-change {
+            font-size: 12px;
+            color: var(--success);
+        }
+        
+        .stat-change.negative {
+            color: var(--danger);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--light-gray);
+            font-size: 14px;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 5px;
+            font-weight: 500;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .diet-plan {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .diet-card {
+            background: rgba(30, 34, 54, 0.8);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .diet-card h3 {
+            color: var(--diet);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+        }
+        
+        .diet-card h3 i {
+            background: var(--diet);
+            color: var(--dark);
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+        }
+        
+        .diet-card ul {
+            padding-left: 0;
+            list-style: none;
+        }
+        
+        .diet-card li {
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .diet-card .food-info {
+            font-size: 13px;
+            color: var(--light-gray);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(255, 158, 0, 0.1);
+        }
+        
+        .diet-card .food-info:hover {
+            background: rgba(255, 158, 0, 0.2);
+        }
+        
+        .diet-card .complete-food {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--success);
+            border-radius: 50%;
+            cursor: pointer;
+            text-align: center;
+            line-height: 18px;
+            margin-left: 10px;
+            font-size: 12px;
+        }
+        
+        .diet-card .complete-food.completed {
+            background: var(--success);
+            color: var(--dark);
+        }
+        
+        .natural-bodybuilding {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .natural-bodybuilding h3 {
+            color: var(--success);
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .training-calendar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .day-card {
+            background: rgba(30, 34, 54, 0.8);
+            border-radius: 14px;
+            padding: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .day-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .day-card.completed {
+            border: 2px solid var(--success);
+        }
+        
+        .day-card.partial {
+            border: 2px solid var(--warning);
+        }
+        
+        .day-card.rest-day {
+            background: rgba(108, 117, 125, 0.15);
+        }
+        
+        .day-card .date {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary);
+            font-size: 17px;
+        }
+        
+        .day-card .status {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+        
+        .day-card .status.workout {
+            background: var(--primary);
+        }
+        
+        .day-card .status.diet {
+            background: var(--diet);
+        }
+        
+        .day-card .status.both {
+            background: var(--success);
+        }
+        
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .calendar-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .food-details {
+            position: absolute;
+            background: rgba(18, 22, 36, 0.95);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            z-index: 10;
+            display: none;
+            border: 1px solid var(--primary);
+            max-width: 300px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 18px 30px;
+            border-radius: 12px;
+            background: var(--success);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            z-index: 2000;
+            transform: translateX(150%);
+            transition: transform 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            background: var(--danger);
+        }
+        
+        .notification.warning {
+            background: var(--warning);
+            color: var(--dark);
+        }
+        
+        .notification.info {
+            background: var(--primary);
+        }
+        
+        .history-container {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(30, 34, 54, 0.8);
+            border-radius: 10px;
+            border: 1px solid rgba(78, 115, 255, 0.2);
+        }
+        
+        .history-item {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+        
+        .history-item:hover {
+            background: rgba(78, 115, 255, 0.1);
+        }
+        
+        .duplicate-set {
+            background: rgba(78, 115, 255, 0.1);
+            color: var(--primary);
+            border: none;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .duplicate-set:hover {
+            background: rgba(78, 115, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .diet-training-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .calendar-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .year-selector {
+            background: rgba(78, 115, 255, 0.1);
+            color: var(--light);
+            border: 1px solid var(--primary);
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+        }
+        
+        .calendar-view-switcher {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .view-btn {
+            background: rgba(78, 115, 255, 0.1);
+            color: var(--light);
+            border: 1px solid var(--primary);
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .view-btn:hover {
+            background: rgba(78, 115, 255, 0.2);
+        }
+        
+        .view-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        
+        .calendar-day {
+            padding: 15px 10px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 90px;
+            background: rgba(30, 34, 54, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .calendar-day:hover {
+            background: rgba(78, 115, 255, 0.2);
+        }
+        
+        .calendar-day.workout-day {
+            background: rgba(78, 115, 255, 0.2);
+            border: 1px solid var(--primary);
+        }
+        
+        .calendar-day.completed {
+            background: rgba(6, 214, 160, 0.2);
+            border: 1px solid var(--success);
+        }
+        
+        .calendar-day-header {
+            font-weight: bold;
+            text-align: center;
+            padding: 12px 5px;
+            background: rgba(30, 34, 54, 0.8);
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        
+        .calendar-day .day-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        .calendar-day .workout-info {
+            font-size: 12px;
+            color: var(--success);
+            margin-top: 5px;
+        }
+        
+        .calendar-day .diet-info {
+            font-size: 12px;
+            color: var(--diet);
+            margin-top: 3px;
+        }
+        
+        .measurement-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .measurement-card {
+            background: rgba(30, 34, 54, 0.8);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .measurement-card h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 17px;
+        }
+        
+        .measurement-card input {
+            width: 90%;
+            margin: 0 auto;
+            text-align: center;
+            padding: 12px;
+            font-size: 16px;
+        }
+        
+        .goals-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+        
+        .goal-card {
+            background: rgba(30, 34, 54, 0.8);
+            border-radius: 14px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .goal-card h3 {
+            color: var(--warning);
+            margin-bottom: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .goal-actions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .goal-actions button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .goal-actions button:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .goal-progress {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .goal-progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 10px;
+        }
+        
+        .goal-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        
+        .notes-container {
+            margin-top: 20px;
+        }
+        
+        .notes-container textarea {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(30, 34, 54, 0.8);
+            border: 1px solid rgba(78, 115, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            color: var(--light);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+        }
+        
+        .calendar-day .workout-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+        }
+        
+        .calendar-day .diet-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--diet);
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+        }
+        
+        .calendar-day .status-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 8px;
+        }
+        
+        .diet-tracking {
+            margin-top: 20px;
+        }
+        
+        .diet-tracking h3 {
+            color: var(--diet);
+            margin-bottom: 15px;
+        }
+        
+        .diet-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .diet-item {
+            background: rgba(30, 34, 54, 0.8);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .diet-item input[type="checkbox"] {
+            margin-bottom: 10px;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .diet-item .food-name {
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .diet-item .food-calories {
+            font-size: 12px;
+            color: var(--light-gray);
+            margin-top: 5px;
+        }
+        
+        .diet-calories {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(30, 34, 54, 0.8);
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .diet-calories h4 {
+            margin-bottom: 10px;
+            color: var(--diet);
+        }
+        
+        .diet-calories .calories-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--success);
+            margin-bottom: 5px;
+        }
+        
+        .diet-calories .calories-target {
+            color: var(--light-gray);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1100px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .workout-plan {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+            
+            .progress-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            nav ul {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .user-info {
+                justify-content: center;
+                margin: 0 auto;
+            }
+            
+            .calendar-grid {
+                overflow-x: auto;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .card-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .stats, .personal-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .diet-training-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="notification" id="notification">
+            <i class="fas fa-check-circle"></i> İşlem başarıyla tamamlandı!
+        </div>
+        
+        <header>
+            <div class="logo">
+                <h1><i class="fas fa-dumbbell"></i> GURAY's HYPERTROPHY</h1>
+                <span>no.1</span>
+            </div>
+            
+            <nav>
+                <ul>
+                    <li><a href="#" class="active" data-target="dashboard">Gösterge Paneli</a></li>
+                    <li><a href="#" data-target="training-calendar">Antrenman Takvimi</a></li>
+                    <li><a href="#" data-target="diet">Beslenme & Antrenman</a></li>
+                    <li><a href="#" data-target="body-measurements">Vücut Ölçüleri</a></li>
+                    <li><a href="#" data-target="goals">Hedefler</a></li>
+                    <li><a href="#" data-target="program">Program</a></li>
+                </ul>
+            </nav>
+            
+            <div class="user-info" id="userInfo">
+                <div class="user-avatar">K</div>
+                <div>
+                    <div id="userName">Kullanıcı Adı</div>
+                    <small id="userLevel">Seviye: Orta</small>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="main-content">
+                <div class="content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fas fa-calendar-alt"></i> Haftalık Antrenman Planı (5 Gün)</h2>
+                            <div style="display: flex; gap: 15px;">
+                                <div class="completed-count">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Tamamlanan: <strong id="completedCount">0</strong>/5</span>
+                                </div>
+                                <div class="streak">
+                                    <i class="fas fa-fire"></i>
+                                    <span>Devamlılık: <strong id="streakCount">0</strong> gün</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="workout-plan">
+                            <!-- Pazartesi -->
+                            <div class="workout-day" id="day1">
+                                <div class="day-title">
+                                    <i class="fas fa-dumbbell"></i>
+                                    <h3>Pazartesi - Göğüs, Omuz, Arka Kol</h3>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Bench Press">
+                                    <div class="exercise-name">Bench Press</div>
+                                    <div class="exercise-details">
+                                        <span>4x6-8 (RIR 1-2) → Son set failure</span>
+                                    </div>
+                                    <div class="exercise-info">
+                                        <strong>RIR (Reps in Reserve):</strong> Kalan tekrar sayısı. RIR 1-2 demek, seti tamamladığınızda 1-2 tekrar daha yapabilecek gücünüz kaldı demektir.
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Incline Dumbell Press">
+                                    <div class="exercise-name">Incline Dumbell Press</div>
+                                    <div class="exercise-details">
+                                        <span>4x6-8 (RIR 1-2) → Son set failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Cable Cross">
+                                    <div class="exercise-name">Cable Cross</div>
+                                    <div class="exercise-details">
+                                        <span>3x12-15 → Failure</span>
+                                    </div>
+                                    <div class="exercise-info">
+                                        <strong>Failure:</strong> Artık tekrar yapamayacağınız nokta.
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Overhead Press">
+                                    <div class="exercise-name">Overhead Press</div>
+                                    <div class="exercise-details">
+                                        <span>4x8-10 (RIR 1-2)</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Lateral Raise">
+                                    <div class="exercise-name">Lateral Raise</div>
+                                    <div class="exercise-details">
+                                        <span>4x12-15 → Beyond Failure</span>
+                                    </div>
+                                    <div class="exercise-info">
+                                        <strong>Beyond Failure:</strong> Failure'dan sonra kısmi tekrarlarla devam etmek.
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Rear Delt">
+                                    <div class="exercise-name">Rear Delt</div>
+                                    <div class="exercise-details">
+                                        <span>3x12-15 → Beyond Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Triceps Pushdown">
+                                    <div class="exercise-name">Triceps Pushdown</div>
+                                    <div class="exercise-details">
+                                        <span>4x8-10 → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="complete-btn">
+                                    <i class="fas fa-check"></i> Günü Tamamla
+                                </div>
+                            </div>
+                            
+                            <!-- Salı -->
+                            <div class="workout-day" id="day2">
+                                <div class="day-title">
+                                    <i class="fas fa-fire"></i>
+                                    <h3>Salı - Sırt, Ön Kol</h3>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Lat Pulldown">
+                                    <div class="exercise-name">Lat Pulldown</div>
+                                    <div class="exercise-details">
+                                        <span>4x8-10 (RIR 1-2) → Son set failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Barbell Row">
+                                    <div class="exercise-name">Barbell Row</div>
+                                    <div class="exercise-details">
+                                        <span>4x8-10 (RIR 1-2) → Son set failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Cable Row">
+                                    <div class="exercise-name">Cable Row</div>
+                                    <div class="exercise-details">
+                                        <span>3x12-15 → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Rope Pullover">
+                                    <div class="exercise-name">Rope Pullover</div>
+                                    <div class="exercise-details">
+                                        <span>3x12-15 → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Pull Up">
+                                    <div class="exercise-name">Pull Up</div>
+                                    <div class="exercise-details">
+                                        <span>1x Max → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Barbell Curl">
+                                    <div class="exercise-name">Barbell Curl</div>
+                                    <div class="exercise-details">
+                                        <span>4x8-10 (RIR 1) → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Dumbell Curl">
+                                    <div class="exercise-name">Dumbell Curl</div>
+                                    <div class="exercise-details">
+                                        <span>4x8-10 (RIR 1) → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="complete-btn">
+                                    <i class="fas fa-check"></i> Günü Tamamla
+                                </div>
+                            </div>
+                            
+                            <!-- Çarşamba -->
+                            <div class="workout-day" id="day3">
+                                <div class="day-title">
+                                    <i class="fas fa-running"></i>
+                                    <h3>Çarşamba - Bacak, Karın</h3>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Squat">
+                                    <div class="exercise-name">Squat</div>
+                                    <div class="exercise-details">
+                                        <span>4x8-10 + 2x12-15 (RIR 1-2)</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Leg Press">
+                                    <div class="exercise-name">Leg Press</div>
+                                    <div class="exercise-details">
+                                        <span>4x8-10 + 2x12-15 (RIR 1-2)</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Leg Curl">
+                                    <div class="exercise-name">Leg Curl</div>
+                                    <div class="exercise-details">
+                                        <span>5x12-15 → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Calf Raise">
+                                    <div class="exercise-name">Calf Raise</div>
+                                    <div class="exercise-details">
+                                        <span>4x15-20 → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="complete-btn">
+                                    <i class="fas fa-check"></i> Günü Tamamla
+                                </div>
+                            </div>
+                            
+                            <!-- Cuma -->
+                            <div class="workout-day" id="day4">
+                                <div class="day-title">
+                                    <i class="fas fa-dumbbell"></i>
+                                    <h3>Cuma - Göğüs, Omuz, Kol</h3>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Incline Dumbell Press">
+                                    <div class="exercise-name">Incline Dumbell Press</div>
+                                    <div class="exercise-details">
+                                        <span>4x6-8 (RIR 1-2)</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Cable Cross">
+                                    <div class="exercise-name">Cable Cross</div>
+                                    <div class="exercise-details">
+                                        <span>3x12-15 → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Overhead Press">
+                                    <div class="exercise-name">Overhead Press</div>
+                                    <div class="exercise-details">
+                                        <span>4x8-10 (RIR 1-2)</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Lateral Raise">
+                                    <div class="exercise-name">Lateral Raise</div>
+                                    <div class="exercise-details">
+                                        <span>3x8-10 + 3x12-15 → Failure / Beyond failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Dumbell Curl">
+                                    <div class="exercise-name">Dumbell Curl</div>
+                                    <div class="exercise-details">
+                                        <span>4x8-10 → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Rear Delt">
+                                    <div class="exercise-name">Rear Delt</div>
+                                    <div class="exercise-details">
+                                        <span>3x12-15 → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Triceps Pushdown">
+                                    <div class="exercise-name">Triceps Pushdown</div>
+                                    <div class="exercise-details">
+                                        <span>4x8-10 → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="complete-btn">
+                                    <i class="fas fa-check"></i> Günü Tamamla
+                                </div>
+                            </div>
+                            
+                            <!-- Cumartesi -->
+                            <div class="workout-day" id="day5">
+                                <div class="day-title">
+                                    <i class="fas fa-fire"></i>
+                                    <h3>Cumartesi - Sırt, Bacak</h3>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Lat Pulldown">
+                                    <div class="exercise-name">Lat Pulldown</div>
+                                    <div class="exercise-details">
+                                        <span>4x8-10 (RIR 1-2) → Son set failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Cable Row">
+                                    <div class="exercise-name">Cable Row</div>
+                                    <div class="exercise-details">
+                                        <span>4x12-15 → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Romanian Deadlift">
+                                    <div class="exercise-name">Romanian Deadlift</div>
+                                    <div class="exercise-details">
+                                        <span>4x8-10 (RIR 1-2)</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Leg Press">
+                                    <div class="exercise-name">Leg Press</div>
+                                    <div class="exercise-details">
+                                        <span>5x8-10 (RIR 1-2)</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="exercise" data-exercise="Calf Raise">
+                                    <div class="exercise-name">Calf Raise</div>
+                                    <div class="exercise-details">
+                                        <span>4x15-20 → Failure</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="complete-btn">
+                                    <i class="fas fa-check"></i> Günü Tamamla
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fas fa-chart-line"></i> İlerleme Takibi</h2>
+                            <div>
+                                <button class="btn-outline btn">1 Ay</button>
+                                <button class="btn">3 Ay</button>
+                                <button class="btn-outline btn">6 Ay</button>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-section">
+                            <div class="card">
+                                <h3>Bench Press Gelişimi</h3>
+                                <div class="progress-chart">
+                                    <canvas id="benchPressChart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <h3>Squat Gelişimi</h3>
+                                <div class="progress-chart">
+                                    <canvas id="squatChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fas fa-trophy"></i> Haftalık İlerleme</h2>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span>Hedeflenen Antrenman: 5</span>
+                                <span id="weekProgress">0/5</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="weekProgressFill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar">
+                    <div class="card next-workout">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fas fa-calendar-check"></i> Sıradaki Antrenman</h2>
+                        </div>
+                        <h3 id="nextWorkoutTitle">Pazartesi - Göğüs, Omuz, Arka Kol</h3>
+                        <p id="nextWorkoutTime">Bugün, 18:00</p>
+                        <p id="nextWorkoutExercises">Toplam 7 egzersiz</p>
+                        <p id="nextWorkoutDuration">Tahmini süre: 75 dakika</p>
+                        <button class="btn" style="margin-top: 20px; width: 100%;">
+                            <i class="fas fa-play"></i> Antrenmana Başla
+                        </button>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fas fa-user"></i> Kişisel İstatistikler</h2>
+                        </div>
+                        
+                        <div class="personal-stats">
+                            <div class="stat-card">
+                                <i class="fas fa-weight-hanging fa-2x"></i>
+                                <div class="stat-value" id="userWeightStat">0 kg</div>
+                                <div class="stat-label">Vücut Ağırlığı</div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <i class="fas fa-dumbbell fa-2x"></i>
+                                <div class="stat-value" id="completedWorkoutStat">0</div>
+                                <div class="stat-label">Tamamlanan Antrenman</div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <i class="fas fa-fire fa-2x"></i>
+                                <div class="stat-value" id="streakStat">0</div>
+                                <div class="stat-label">Devamlılık (gün)</div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <i class="fas fa-chart-line fa-2x"></i>
+                                <div class="stat-value" id="muscleGainStat">0 kg</div>
+                                <div class="stat-label">Kas Kütlesi</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fas fa-history"></i> Son Antrenmanlar</h2>
+                        </div>
+                        
+                        <div class="recent-workouts" id="recentWorkouts">
+                            <div class="workout-item">
+                                <div>
+                                    <div class="workout-type">Antrenman kaydı bulunamadı</div>
+                                    <div class="workout-date">Başlayın ve ilk antrenmanınızı kaydedin!</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Training Calendar Tab -->
+        <div id="training-calendar" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-calendar"></i> Antrenman Takvimi - <span id="currentMonthYear">Ağustos 2025</span></h2>
+                    <div class="calendar-nav">
+                        <button class="btn-outline btn" id="prevMonthBtn"><i class="fas fa-chevron-left"></i></button>
+                        <div class="calendar-view-switcher">
+                            <button class="view-btn active" data-view="monthly">Aylık</button>
+                            <button class="view-btn" data-view="yearly">Yıllık</button>
+                            <button class="view-btn" data-view="daily">Günlük</button>
+                        </div>
+                        <button class="btn-outline btn" id="nextMonthBtn"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                
+                <!-- Monthly Calendar View -->
+                <div class="calendar-view" id="monthlyView">
+                    <div class="calendar-grid">
+                        <div class="calendar-day-header">Pzt</div>
+                        <div class="calendar-day-header">Sal</div>
+                        <div class="calendar-day-header">Çar</div>
+                        <div class="calendar-day-header">Per</div>
+                        <div class="calendar-day-header">Cum</div>
+                        <div class="calendar-day-header">Cmt</div>
+                        <div class="calendar-day-header">Paz</div>
+                        <!-- Calendar days will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Yearly Calendar View -->
+                <div class="calendar-view" id="yearlyView" style="display: none;">
+                    <div class="training-calendar" id="calendarMonths">
+                        <!-- Yearly calendar will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Daily Calendar View -->
+                <div class="calendar-view" id="dailyView" style="display: none;">
+                    <div class="notes-container">
+                        <h3>Bugün - <span id="dailyDate">7 Ağustos 2025</span></h3>
+                        <textarea id="dailyNotes" placeholder="Bugün hakkında notlarınızı buraya yazın..."></textarea>
+                        <button class="btn" id="saveNotesBtn" style="margin-top: 15px;">
+                            <i class="fas fa-save"></i> Notları Kaydet
+                        </button>
+                    </div>
+                    
+                    <div class="diet-tracking">
+                        <h3><i class="fas fa-apple-alt"></i> Günlük Beslenme Takibi</h3>
+                        <div class="diet-items">
+                            <div class="diet-item">
+                                <input type="checkbox" id="breakfast">
+                                <div class="food-name">Sabah Kahvaltısı</div>
+                                <div class="food-calories">800 kalori</div>
+                            </div>
+                            
+                            <div class="diet-item">
+                                <input type="checkbox" id="lunch">
+                                <div class="food-name">Öğle Yemeği</div>
+                                <div class="food-calories">1000 kalori</div>
+                            </div>
+                            
+                            <div class="diet-item">
+                                <input type="checkbox" id="dinner">
+                                <div class="food-name">Akşam Yemeği</div>
+                                <div class="food-calories">1200 kalori</div>
+                            </div>
+                            
+                            <div class="diet-item">
+                                <input type="checkbox" id="snacks">
+                                <div class="food-name">Ara Öğünler</div>
+                                <div class="food-calories">500 kalori</div>
+                            </div>
+                        </div>
+                        
+                        <div class="diet-calories">
+                            <h4>Toplam Kalori</h4>
+                            <div class="calories-value" id="totalCalories">0</div>
+                            <div class="calories-target">Hedef: <span id="calorieTarget">3500</span> kalori</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="btn" id="completeDayBtn" style="width: 100%;">
+                            <i class="fas fa-check-circle"></i> Günü Tamamla
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Diet & Training Tab -->
+        <div id="diet" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-apple-alt"></i> Beslenme ve Antrenman Takibi</h2>
+                    <div>
+                        <button class="btn-outline btn" id="prevWeekBtn">Önceki Hafta</button>
+                        <button class="btn" id="thisWeekBtn">Bu Hafta</button>
+                        <button class="btn-outline btn" id="nextWeekBtn">Sonraki Hafta</button>
+                    </div>
+                </div>
+                
+                <div class="diet-training-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fas fa-utensils"></i> Günlük Beslenme Programı</h2>
+                        </div>
+                        <div class="program-info">
+                            <p>Kas kütlesi artışı için örnek beslenme programı. Bu program yaklaşık 3200-3500 kalori, 250g protein içerir.</p>
+                            
+                            <div class="diet-plan">
+                                <div class="diet-card">
+                                    <h3><i class="fas fa-sun"></i> Sabah Kahvaltısı</h3>
+                                    <ul>
+                                        <li>
+                                            <span>4 adet tam yumurta</span>
+                                            <span class="food-info" data-food="yumurta">ℹ️</span>
+                                            <span class="complete-food" data-food="yumurta"></span>
+                                        </li>
+                                        <li>
+                                            <span>100 gr yulaf ezmesi</span>
+                                            <span class="food-info" data-food="yulaf">ℹ️</span>
+                                            <span class="complete-food" data-food="yulaf"></span>
+                                        </li>
+                                        <li>
+                                            <span>20 adet çiğ badem</span>
+                                            <span class="food-info" data-food="badem">ℹ️</span>
+                                            <span class="complete-food" data-food="badem"></span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="diet-card">
+                                    <h3><i class="fas fa-dumbbell"></i> Antrenman Öncesi</h3>
+                                    <ul>
+                                        <li>
+                                            <span>300 gr haşlanmış pirinç</span>
+                                            <span class="food-info" data-food="pirinç">ℹ️</span>
+                                            <span class="complete-food" data-food="pirinç"></span>
+                                        </li>
+                                        <li>
+                                            <span>400 gr ızgara tavuk göğsü</span>
+                                            <span class="food-info" data-food="tavuk">ℹ️</span>
+                                            <span class="complete-food" data-food="tavuk"></span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="diet-card">
+                                    <h3><i class="fas fa-apple-alt"></i> Antrenman Sonrası</h3>
+                                    <ul>
+                                        <li>
+                                            <span>300 gr fırın patates</span>
+                                            <span class="food-info" data-food="patates">ℹ️</span>
+                                            <span class="complete-food" data-food="patates"></span>
+                                        </li>
+                                        <li>
+                                            <span>200 gr ızgara somon</span>
+                                            <span class="food-info" data-food="somon">ℹ️</span>
+                                            <span class="complete-food" data-food="somon"></span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fas fa-dumbbell"></i> Günlük Antrenman Programı</h2>
+                        </div>
+                        <div class="program-info">
+                            <p>Bugün için planlanan antrenman programı:</p>
+                            
+                            <div class="workout-plan">
+                                <div class="workout-day" id="todayWorkout">
+                                    <div class="day-title">
+                                        <i class="fas fa-dumbbell"></i>
+                                        <h3>Pazartesi - Göğüs, Omuz, Arka Kol</h3>
+                                    </div>
+                                    
+                                    <div class="exercise" data-exercise="Bench Press">
+                                        <div class="exercise-name">Bench Press</div>
+                                        <div class="exercise-details">
+                                            <span>4x6-8 (RIR 1-2) → Son set failure</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="exercise" data-exercise="Incline Dumbell Press">
+                                        <div class="exercise-name">Incline Dumbell Press</div>
+                                        <div class="exercise-details">
+                                            <span>4x6-8 (RIR 1-2) → Son set failure</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="exercise" data-exercise="Cable Cross">
+                                        <div class="exercise-name">Cable Cross</div>
+                                        <div class="exercise-details">
+                                            <span>3x12-15 → Failure</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="exercise" data-exercise="Overhead Press">
+                                        <div class="exercise-name">Overhead Press</div>
+                                        <div class="exercise-details">
+                                            <span>4x8-10 (RIR 1-2)</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="exercise" data-exercise="Lateral Raise">
+                                        <div class="exercise-name">Lateral Raise</div>
+                                        <div class="exercise-details">
+                                            <span>4x12-15 → Beyond Failure</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="exercise" data-exercise="Rear Delt">
+                                        <div class="exercise-name">Rear Delt</div>
+                                        <div class="exercise-details">
+                                            <span>3x12-15 → Beyond Failure</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="exercise" data-exercise="Triceps Pushdown">
+                                        <div class="exercise-name">Triceps Pushdown</div>
+                                        <div class="exercise-details">
+                                            <span>4x8-10 → Failure</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="complete-btn">
+                                        <i class="fas fa-check"></i> Antrenmanı Tamamla
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Body Measurements Tab -->
+        <div id="body-measurements" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-ruler-combined"></i> Vücut Ölçüleri Takibi</h2>
+                </div>
+                <div class="program-info">
+                    <p>Vücut gelişiminizi takip etmek için ölçülerinizi düzenli olarak kaydedin:</p>
+                    
+                    <div class="measurement-form">
+                        <div class="measurement-card">
+                            <h3>Göğüs (cm)</h3>
+                            <input type="number" id="chestMeasurement" placeholder="Ölçü girin">
+                        </div>
+                        
+                        <div class="measurement-card">
+                            <h3>Kol (cm)</h3>
+                            <input type="number" id="armMeasurement" placeholder="Ölçü girin">
+                        </div>
+                        
+                        <div class="measurement-card">
+                            <h3>Bel (cm)</h3>
+                            <input type="number" id="waistMeasurement" placeholder="Ölçü girin">
+                        </div>
+                        
+                        <div class="measurement-card">
+                            <h3>Kalça (cm)</h3>
+                            <input type="number" id="hipMeasurement" placeholder="Ölçü girin">
+                        </div>
+                        
+                        <div class="measurement-card">
+                            <h3>Bacak (cm)</h3>
+                            <input type="number" id="legMeasurement" placeholder="Ölçü girin">
+                        </div>
+                        
+                        <div class="measurement-card">
+                            <h3>Baldır (cm)</h3>
+                            <input type="number" id="calfMeasurement" placeholder="Ölçü girin">
+                        </div>
+                    </div>
+                    
+                    <button class="btn save-btn" id="saveMeasurementsBtn">
+                        <i class="fas fa-save"></i> Ölçüleri Kaydet
+                    </button>
+                    
+                    <div class="progress-chart" style="margin-top: 30px;">
+                        <canvas id="measurementsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Goals Tab -->
+        <div id="goals" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-bullseye"></i> Hedefler ve İlerleme</h2>
+                    <button class="btn" id="addGoalBtnMain">
+                        <i class="fas fa-plus"></i> Yeni Hedef Ekle
+                    </button>
+                </div>
+                <div class="program-info">
+                    <p>Vücut geliştirme hedeflerinizi belirleyin ve ilerlemenizi takip edin:</p>
+                    
+                    <div class="goals-container" id="goalsContainer">
+                        <!-- Goals will be populated here -->
+                    </div>
+                    
+                    <!-- Goal Form -->
+                    <div class="card" id="goalForm" style="margin-top: 30px; display: none;">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fas fa-plus-circle"></i> Yeni Hedef Ekle</h2>
+                        </div>
+                        <div class="form-group">
+                            <label for="goalName">Hedef Adı</label>
+                            <input type="text" id="goalName" placeholder="Hedef adı girin">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="currentValue">Şu anki Değer</label>
+                            <input type="number" id="currentValue" placeholder="Mevcut durum">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="targetValue">Hedef Değer</label>
+                            <input type="number" id="targetValue" placeholder="Hedef değer">
+                        </div>
+                        
+                        <button class="btn save-btn" id="saveGoalBtn">
+                            <i class="fas fa-save"></i> Hedefi Kaydet
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Program Tab -->
+        <div id="program" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-book"></i> Natural Vücut Geliştirme Rehberi</h2>
+                </div>
+                <div class="program-info">
+                    <p><strong>Natural vücut geliştirme</strong>, performans artırıcı herhangi bir ilaç (PED) kullanmadan yapılan vücut geliştirme türüdür. Natural sporcular genetik potansiyellerini maksimuma çıkarmayı hedefler.</p>
+                    
+                    <div class="natural-bodybuilding">
+                        <h3>Natural Vücut Geliştirmenin Temel İlkeleri</h3>
+                        <ul>
+                            <li><strong>Progresif Aşırı Yük:</strong> Kaslarınızı sürekli olarak daha fazla zorlamalısınız. Ağırlık, tekrar veya set sayılarını zamanla artırmalısınız.</li>
+                            <li><strong>Beslenme:</strong> Yeterli protein (1.6-2.2g/kg), karbonhidrat ve sağlıklı yağ alımı kritik öneme sahiptir.</li>
+                            <li><strong>Dinlenme:</strong> Kasların büyümesi için dinlenme ve uyku çok önemlidir. Her gece 7-9 saat kaliteli uyku hedefleyin.</li>
+                            <li><strong>Tutarlılık:</strong> Antrenman ve beslenme programına sürekli uyum, uzun vadeli sonuçların anahtarıdır.</li>
+                            <li><strong>Gerçekçi Beklentiler:</strong> Natural gelişim zaman alır. Ayda 0.5-1 kg kas kazanımı mükemmel bir ilerlemedir.</li>
+                        </ul>
+                        
+                        <h3>Önemli İpuçları</h3>
+                        <ul>
+                            <li>Temel bileşik hareketlere (squat, bench press, deadlift) odaklanın</li>
+                            <li>Antrenman hacmini yönetin - fazla antrenman gelişimi yavaşlatır</li>
+                            <li>Protein alımını gün boyunca eşit dağıtın</li>
+                            <li>Kardiyoyu aşırıya kaçmadan yapın</li>
+                            <li>Stresi yönetin - kortizol kas yıkımını artırır</li>
+                            <li>Sabırlı olun - doğal gelişim zaman alır</li>
+                        </ul>
+                        
+                        <h3>5 Günlük Program Detayları</h3>
+                        <ul>
+                            <li><strong>Pazartesi:</strong> Göğüs, Omuz, Arka Kol</li>
+                            <li><strong>Salı:</strong> Sırt, Ön Kol</li>
+                            <li><strong>Çarşamba:</strong> Bacak, Karın</li>
+                            <li><strong>Perşembe:</strong> Dinlenme</li>
+                            <li><strong>Cuma:</strong> Göğüs, Omuz, Kol</li>
+                            <li><strong>Cumartesi:</strong> Sırt, Bacak</li>
+                            <li><strong>Pazar:</strong> Dinlenme</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>GURAY's HYPERTROPHY Takip Uygulaması © 2025 - Tüm hakları saklıdır</p>
+            <p>Vücut geliştirme yolculuğunuzda sizinle!</p>
+        </footer>
+    </div>
+
+    <!-- User Modal -->
+    <div class="modal" id="userModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeUserModal">&times;</button>
+            <h2 class="modal-title">Profil Bilgileri</h2>
+            
+            <div class="form-group">
+                <label for="userNameInput">Kullanıcı Adı</label>
+                <input type="text" id="userNameInput" placeholder="Kullanıcı adınızı girin">
+            </div>
+            
+            <div class="form-group">
+                <label for="userWeight">Vücut Ağırlığı (kg)</label>
+                <input type="number" id="userWeight" placeholder="Ağırlığınızı girin">
+            </div>
+            
+            <div class="form-group">
+                <label for="initialWeight">Başlangıç Ağırlığı (kg)</label>
+                <input type="number" id="initialWeight" placeholder="Başlangıç ağırlığınız">
+            </div>
+            
+            <div class="form-group">
+                <label for="userBench">Bench Press Max (kg)</label>
+                <input type="number" id="userBench" placeholder="Bench press max değeriniz">
+            </div>
+            
+            <div class="form-group">
+                <label for="userSquat">Squat Max (kg)</label>
+                <input type="number" id="userSquat" placeholder="Squat max değeriniz">
+            </div>
+            
+            <div class="form-group">
+                <label for="userLevelSelect">Seviye</label>
+                <select id="userLevelSelect">
+                    <option value="Başlangıç">Başlangıç</option>
+                    <option value="Orta" selected>Orta</option>
+                    <option value="İleri">İleri</option>
+                    <option value="Profesyonel">Profesyonel</option>
+                </select>
+            </div>
+            
+            <button class="btn save-btn" id="saveUserBtn">
+                <i class="fas fa-save"></i> Profili Güncelle
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Tüm verileri sıfırla
+        let userData = {
+            name: "Kerem Gök",
+            level: "Orta",
+            weight: 80,
+            initialWeight: 75,
+            benchPress: 90,
+            squat: 120,
+            completedWorkouts: 0,
+            streak: 0
+        };
+
+        // Takvim verileri
+        let calendarData = {};
+        
+        // Egzersiz verileri
+        let workoutData = {};
+        
+        // Vücut ölçüleri
+        let bodyMeasurements = {
+            chest: 105,
+            arm: 38,
+            waist: 85,
+            hip: 100,
+            leg: 60,
+            calf: 40
+        };
+        
+        // Hedefler
+        let goals = [
+            { id: 1, name: "Bench Press Hedefi", current: 90, target: 100 },
+            { id: 2, name: "Vücut Ağırlığı Hedefi", current: 80, target: 85 },
+            { id: 3, name: "Yağ Oranı Hedefi", current: 15, target: 12 },
+            { id: 4, name: "Antrenman Devamlılığı", current: 0, target: 30 }
+        ];
+        
+        // Tamamlanan günler
+        let completedDays = [];
+        
+        // Besin verileri
+        const foodDatabase = {
+            "yumurta": { 
+                name: "Yumurta", 
+                details: "<strong>Yumurta Besin Değerleri:</strong><br>Kalori: 155 kcal<br>Protein: 13g<br>Yağ: 11g<br>Karbonhidrat: 1.1g"
+            },
+            "yulaf": { 
+                name: "Yulaf Ezmesi", 
+                details: "<strong>Yulaf Ezmesi Besin Değerleri:</strong><br>Kalori: 389 kcal<br>Protein: 16.9g<br>Yağ: 6.9g<br>Karbonhidrat: 66.3g"
+            },
+            "badem": { 
+                name: "Badem", 
+                details: "<strong>Badem Besin Değerleri:</strong><br>Kalori: 579 kcal<br>Protein: 21.2g<br>Yağ: 49.9g<br>Karbonhidrat: 21.6g"
+            },
+            "pirinç": { 
+                name: "Pirinç", 
+                details: "<strong>Pirinç Besin Değerleri:</strong><br>Kalori: 130 kcal<br>Protein: 2.7g<br>Yağ: 0.3g<br>Karbonhidrat: 28.2g"
+            },
+            "tavuk": { 
+                name: "Tavuk Göğsü", 
+                details: "<strong>Tavuk Göğsü Besin Değerleri:</strong><br>Kalori: 165 kcal<br>Protein: 31g<br>Yağ: 3.6g<br>Karbonhidrat: 0g"
+            },
+            "patates": { 
+                name: "Patates", 
+                details: "<strong>Patates Besin Değerleri:</strong><br>Kalori: 77 kcal<br>Protein: 2g<br>Yağ: 0.1g<br>Karbonhidrat: 17.5g"
+            },
+            "somon": { 
+                name: "Somon", 
+                details: "<strong>Somon Besin Değerleri:</strong><br>Kalori: 206 kcal<br>Protein: 22g<br>Yağ: 13g<br>Karbonhidrat: 0g"
+            }
+        };
+
+        // Bildirim göster
+        function showNotification(message, type = "success") {
+            const notification = document.getElementById('notification');
+            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Tab switching functionality
+        document.querySelectorAll('nav a').forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all tabs
+                document.querySelectorAll('nav a').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                const target = this.getAttribute('data-target');
+                document.getElementById(target).classList.add('active');
+                
+                // Takvimi oluştur
+                if(target === 'training-calendar') {
+                    generateCalendar();
+                }
+                
+                // Hedefleri yükle
+                if(target === 'goals') {
+                    renderGoals();
+                }
+            });
+        });
+        
+        // Grafikler
+        function initCharts() {
+            // Bench Press Chart
+            const benchCtx = document.getElementById('benchPressChart').getContext('2d');
+            const benchChart = new Chart(benchCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1.Hft', '2.Hft', '3.Hft', '4.Hft', '5.Hft', '6.Hft', '7.Hft', '8.Hft'],
+                    datasets: [{
+                        label: 'Bench Press (kg)',
+                        data: [70, 75, 80, 82, 85, 88, 90, userData.benchPress],
+                        borderColor: '#4e73ff',
+                        backgroundColor: 'rgba(78, 115, 255, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#4e73ff',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            min: 0,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#e9ecef'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#e9ecef'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Squat Chart
+            const squatCtx = document.getElementById('squatChart').getContext('2d');
+            const squatChart = new Chart(squatCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1.Hft', '2.Hft', '3.Hft', '4.Hft', '5.Hft', '6.Hft', '7.Hft', '8.Hft'],
+                    datasets: [{
+                        label: 'Squat (kg)',
+                        data: [90, 95, 100, 105, 110, 115, 118, userData.squat],
+                        borderColor: '#06d6a0',
+                        backgroundColor: 'rgba(6, 214, 160, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#06d6a0',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            min: 0,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#e9ecef'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#e9ecef'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Vücut ölçüleri grafiği
+            const measurementsCtx = document.getElementById('measurementsChart').getContext('2d');
+            const measurementsChart = new Chart(measurementsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Göğüs', 'Kol', 'Bel', 'Kalça', 'Bacak', 'Baldır'],
+                    datasets: [{
+                        label: 'Vücut Ölçüleri (cm)',
+                        data: [
+                            bodyMeasurements.chest, 
+                            bodyMeasurements.arm, 
+                            bodyMeasurements.waist, 
+                            bodyMeasurements.hip, 
+                            bodyMeasurements.leg, 
+                            bodyMeasurements.calf
+                        ],
+                        backgroundColor: [
+                            'rgba(78, 115, 255, 0.7)',
+                            'rgba(255, 158, 0, 0.7)',
+                            'rgba(6, 214, 160, 0.7)',
+                            'rgba(239, 71, 111, 0.7)',
+                            'rgba(138, 63, 252, 0.7)',
+                            'rgba(255, 209, 102, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(78, 115, 255, 1)',
+                            'rgba(255, 158, 0, 1)',
+                            'rgba(6, 214, 160, 1)',
+                            'rgba(239, 71, 111, 1)',
+                            'rgba(138, 63, 252, 1)',
+                            'rgba(255, 209, 102, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#e9ecef'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#e9ecef'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Takvim oluşturma
+        function generateCalendar() {
+            const calendarGrid = document.querySelector('.calendar-grid');
+            // Clear existing days except headers
+            while (calendarGrid.children.length > 7) {
+                calendarGrid.removeChild(calendarGrid.lastChild);
+            }
+            
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+            const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+                "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+            
+            document.getElementById('currentMonthYear').textContent = `${monthNames[month]} ${year}`;
+            
+            // Fill empty days
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day';
+                calendarGrid.appendChild(emptyDay);
+            }
+            
+            // Fill days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.innerHTML = `
+                    <div class="day-number">${day}</div>
+                `;
+                
+                // Add workout status
+                const dayOfWeek = (firstDay + day - 1) % 7;
+                if (dayOfWeek === 1) { // Pazartesi
+                    dayElement.innerHTML += `<div class="workout-info">Göğüs, Omuz, Arka Kol</div>`;
+                    dayElement.classList.add('workout-day');
+                } else if (dayOfWeek === 2) { // Salı
+                    dayElement.innerHTML += `<div class="workout-info">Sırt, Ön Kol</div>`;
+                    dayElement.classList.add('workout-day');
+                } else if (dayOfWeek === 3) { // Çarşamba
+                    dayElement.innerHTML += `<div class="workout-info">Bacak, Karın</div>`;
+                    dayElement.classList.add('workout-day');
+                } else if (dayOfWeek === 5) { // Cuma
+                    dayElement.innerHTML += `<div class="workout-info">Göğüs, Omuz, Kol</div>`;
+                    dayElement.classList.add('workout-day');
+                } else if (dayOfWeek === 6) { // Cumartesi
+                    dayElement.innerHTML += `<div class="workout-info">Sırt, Bacak</div>`;
+                    dayElement.classList.add('workout-day');
+                }
+                
+                // Mark today
+                if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    dayElement.style.border = "2px solid var(--success)";
+                }
+                
+                // Mark completed days
+                if (completedDays.includes(`${day}-${month+1}-${year}`)) {
+                    dayElement.classList.add('completed');
+                }
+                
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+        
+        // Sıradaki antrenmanı hesapla
+        function calculateNextWorkout() {
+            const days = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+            const workouts = {
+                1: { // Pazartesi
+                    title: 'Göğüs, Omuz, Arka Kol',
+                    exercises: 7,
+                    duration: 75
+                },
+                2: { // Salı
+                    title: 'Sırt, Ön Kol',
+                    exercises: 7,
+                    duration: 70
+                },
+                3: { // Çarşamba
+                    title: 'Bacak, Karın',
+                    exercises: 5,
+                    duration: 65
+                },
+                5: { // Cuma
+                    title: 'Göğüs, Omuz, Kol',
+                    exercises: 7,
+                    duration: 75
+                },
+                6: { // Cumartesi
+                    title: 'Sırt, Bacak',
+                    exercises: 6,
+                    duration: 70
+                }
+            };
+            
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0 = Pazar, 1 = Pazartesi, ...
+            const nextWorkoutDay = getNextWorkoutDay(dayOfWeek);
+            
+            // Set next workout info
+            document.getElementById('nextWorkoutTitle').textContent = `${days[nextWorkoutDay.day]} - ${workouts[nextWorkoutDay.day].title}`;
+            document.getElementById('nextWorkoutExercises').textContent = `Toplam ${workouts[nextWorkoutDay.day].exercises} egzersiz`;
+            document.getElementById('nextWorkoutDuration').textContent = `Tahmini süre: ${workouts[nextWorkoutDay.day].duration} dakika`;
+            
+            // Set time
+            if (nextWorkoutDay.daysUntil === 0) {
+                document.getElementById('nextWorkoutTime').textContent = `Bugün, 18:00`;
+            } else if (nextWorkoutDay.daysUntil === 1) {
+                document.getElementById('nextWorkoutTime').textContent = `Yarın, 18:00`;
+            } else {
+                document.getElementById('nextWorkoutTime').textContent = `${days[nextWorkoutDay.day]}, 18:00`;
+            }
+        }
+        
+        // Bir sonraki antrenman gününü hesapla
+        function getNextWorkoutDay(currentDay) {
+            // Workout days: Pazartesi(1), Salı(2), Çarşamba(3), Cuma(5), Cumartesi(6)
+            const workoutDays = [1, 2, 3, 5, 6];
+            
+            // Find next workout day
+            let daysUntil = 0;
+            let nextDay = currentDay;
+            
+            while (true) {
+                nextDay = (nextDay + 1) % 7;
+                daysUntil++;
+                
+                // Skip Sunday (0) and Thursday (4)
+                if (workoutDays.includes(nextDay)) {
+                    return {
+                        day: nextDay,
+                        daysUntil: daysUntil
+                    };
+                }
+            }
+        }
+        
+        // Hedefleri render et
+        function renderGoals() {
+            const container = document.getElementById('goalsContainer');
+            container.innerHTML = '';
+            
+            goals.forEach(goal => {
+                const progress = (goal.current / goal.target) * 100;
+                const progressStyle = progress > 100 ? 100 : progress;
+                
+                const goalCard = document.createElement('div');
+                goalCard.className = 'goal-card';
+                goalCard.innerHTML = `
+                    <h3><i class="fas fa-bullseye"></i> ${goal.name}</h3>
+                    <div class="goal-actions">
+                        <button class="edit-goal" data-id="${goal.id}"><i class="fas fa-edit"></i></button>
+                        <button class="delete-goal" data-id="${goal.id}"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="goal-progress">
+                        <div class="goal-progress-fill" style="width: ${progressStyle}%;"></div>
+                    </div>
+                    <div class="goal-stats">
+                        <span>Şu an: ${goal.current}${goal.name.includes('Yağ') ? '%' : goal.name.includes('Devamlılık') ? ' gün' : 'kg'}</span>
+                        <span>Hedef: ${goal.target}${goal.name.includes('Yağ') ? '%' : goal.name.includes('Devamlılık') ? ' gün' : 'kg'}</span>
+                    </div>
+                `;
+                
+                container.appendChild(goalCard);
+                
+                // Add event listeners to buttons
+                goalCard.querySelector('.edit-goal').addEventListener('click', function() {
+                    editGoal(goal.id);
+                });
+                
+                goalCard.querySelector('.delete-goal').addEventListener('click', function() {
+                    deleteGoal(goal.id);
+                });
+            });
+        }
+        
+        // Hedef düzenle
+        function editGoal(id) {
+            const goal = goals.find(g => g.id === id);
+            if (goal) {
+                document.getElementById('goalName').value = goal.name;
+                document.getElementById('currentValue').value = goal.current;
+                document.getElementById('targetValue').value = goal.target;
+                
+                document.getElementById('goalForm').style.display = 'block';
+                
+                // Update save button to edit mode
+                const saveBtn = document.getElementById('saveGoalBtn');
+                saveBtn.setAttribute('data-id', id);
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> Güncelle';
+            }
+        }
+        
+        // Hedef sil
+        function deleteGoal(id) {
+            if (confirm('Bu hedefi silmek istediğinize emin misiniz?')) {
+                goals = goals.filter(goal => goal.id !== id);
+                renderGoals();
+                showNotification('Hedef başarıyla silindi!');
+            }
+        }
+        
+        // Günü tamamlama
+        document.querySelectorAll('.complete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const dayCard = this.closest('.workout-day');
+                const dayId = dayCard.id;
+                const dayTitle = dayCard.querySelector('h3').textContent;
+                
+                // Eğer zaten tamamlanmışsa işaretini kaldır
+                if(dayCard.classList.contains('completed')) {
+                    dayCard.classList.remove('completed');
+                    this.innerHTML = '<i class="fas fa-check"></i> Günü Tamamla';
+                    
+                    // Tamamlanan gün sayısını güncelle
+                    const completedCount = document.getElementById('completedCount');
+                    completedCount.textContent = parseInt(completedCount.textContent) - 1;
+                    
+                    userData.completedWorkouts--;
+                    updateUserStats();
+                    
+                    // Takvimden kaldır
+                    const today = new Date();
+                    const dateStr = `${today.getDate()}-${today.getMonth()+1}-${today.getFullYear()}`;
+                    completedDays = completedDays.filter(d => d !== dateStr);
+                    
+                    showNotification('Tamamlama işlemi iptal edildi', 'warning');
+                    return;
+                }
+                
+                // Günü tamamlandı olarak işaretle
+                dayCard.classList.add('completed');
+                this.innerHTML = '<i class="fas fa-check"></i> Tamamlandı';
+                
+                // Son antrenmanlara ekle
+                const today = new Date();
+                const dateStr = today.toLocaleDateString('tr-TR') + ', ' + today.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+                
+                const recentWorkouts = document.getElementById('recentWorkouts');
+                if (recentWorkouts.firstChild.textContent.includes('bulunamadı')) {
+                    recentWorkouts.innerHTML = '';
+                }
+                
+                const workoutItem = document.createElement('div');
+                workoutItem.className = 'workout-item';
+                workoutItem.innerHTML = `
+                    <div>
+                        <div class="workout-type">${dayTitle}</div>
+                        <div class="workout-date">${dateStr}</div>
+                    </div>
+                    <div class="workout-stats">
+                        <div class="workout-stat">${Math.floor(Math.random() * 20 + 60)} dk</div>
+                        <div class="workout-stat">${Math.floor(Math.random() * 10 + 15)} set</div>
+                    </div>
+                `;
+                
+                recentWorkouts.prepend(workoutItem);
+                
+                // İstatistikleri güncelle
+                userData.completedWorkouts++;
+                userData.streak++;
+                updateUserStats();
+                
+                // Tamamlanan gün sayısını güncelle
+                const completedCount = document.getElementById('completedCount');
+                completedCount.textContent = parseInt(completedCount.textContent) + 1;
+                
+                // Devamlılık gün sayısını güncelle
+                const streakCount = document.getElementById('streakCount');
+                streakCount.textContent = userData.streak;
+                
+                // Haftalık ilerleme
+                document.getElementById('weekProgress').textContent = `${completedCount.textContent}/5`;
+                document.getElementById('weekProgressFill').style.width = `${(completedCount.textContent / 5) * 100}%`;
+                
+                // Takvime ekle
+                const dateKey = `${today.getDate()}-${today.getMonth()+1}-${today.getFullYear()}`;
+                if (!completedDays.includes(dateKey)) {
+                    completedDays.push(dateKey);
+                }
+                
+                // Hedefleri güncelle
+                const workoutGoal = goals.find(g => g.name === 'Antrenman Devamlılığı');
+                if (workoutGoal) {
+                    workoutGoal.current++;
+                    renderGoals();
+                }
+                
+                // Bildirim
+                showNotification('Antrenman başarıyla tamamlandı!');
+            });
+        }
+        
+        // Modal işlemleri
+        const logModal = document.getElementById('logModal');
+        const closeModal = document.getElementById('closeModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const exerciseName = document.getElementById('exerciseName');
+        const addSetBtn = document.getElementById('addSetBtn');
+        const setsContainer = document.getElementById('setsContainer');
+        const saveLogBtn = document.getElementById('saveLogBtn');
+        const historyContainer = document.getElementById('historyContainer');
+        
+        // Kullanıcı modalı
+        const userModal = document.getElementById('userModal');
+        const closeUserModal = document.getElementById('closeUserModal');
+        const saveUserBtn = document.getElementById('saveUserBtn');
+        const userNameInput = document.getElementById('userNameInput');
+        const userLevelSelect = document.getElementById('userLevelSelect');
+        const userInfo = document.getElementById('userInfo');
+        const userWeightInput = document.getElementById('userWeight');
+        const initialWeightInput = document.getElementById('initialWeight');
+        const userBenchInput = document.getElementById('userBench');
+        const userSquatInput = document.getElementById('userSquat');
+        
+        // Egzersizlere tıklama
+        document.querySelectorAll('.exercise').forEach(exercise => {
+            exercise.addEventListener('click', function() {
+                const exerciseNameText = this.getAttribute('data-exercise');
+                exerciseName.value = exerciseNameText;
+                modalTitle.textContent = `${exerciseNameText} Kaydı`;
+                
+                // Set tarihi bugün olarak ayarla
+                const today = new Date();
+                const formattedDate = today.toISOString().split('T')[0];
+                document.getElementById('workoutDate').value = formattedDate;
+                
+                logModal.style.display = 'flex';
+            });
+            
+            // Show exercise info on hover
+            exercise.addEventListener('mouseenter', function() {
+                const info = this.querySelector('.exercise-info');
+                if (info) {
+                    info.style.display = 'block';
+                }
+            });
+            
+            exercise.addEventListener('mouseleave', function() {
+                const info = this.querySelector('.exercise-info');
+                if (info) {
+                    info.style.display = 'none';
+                }
+            });
+        });
+        
+        // Kullanıcı bilgilerine tıklama
+        userInfo.addEventListener('click', function() {
+            // Mevcut verileri inputlara doldur
+            userNameInput.value = userData.name;
+            userWeightInput.value = userData.weight;
+            initialWeightInput.value = userData.initialWeight;
+            userBenchInput.value = userData.benchPress;
+            userSquatInput.value = userData.squat;
+            userLevelSelect.value = userData.level;
+            
+            userModal.style.display = 'flex';
+        });
+        
+        // Modal kapatma
+        closeModal.addEventListener('click', function() {
+            logModal.style.display = 'none';
+        });
+        
+        closeUserModal.addEventListener('click', function() {
+            userModal.style.display = 'none';
+        });
+        
+        // Set ekleme
+        addSetBtn.addEventListener('click', function() {
+            addSetRow();
+        });
+        
+        function addSetRow(weight = '', reps = '') {
+            const setRow = document.createElement('div');
+            setRow.className = 'set-row';
+            setRow.innerHTML = `
+                <input type="number" min="1" max="100" placeholder="Ağırlık (kg)" class="set-weight" value="${weight}">
+                <input type="number" min="1" max="50" placeholder="Tekrar" class="set-reps" value="${reps}">
+                <button class="duplicate-set" title="Aynı seti kopyala">
+                    <i class="fas fa-copy"></i>
+                </button>
+            `;
+            setsContainer.appendChild(setRow);
+            
+            // Kopyalama butonuna event ekle
+            const duplicateBtn = setRow.querySelector('.duplicate-set');
+            duplicateBtn.addEventListener('click', function() {
+                const weight = setRow.querySelector('.set-weight').value;
+                const reps = setRow.querySelector('.set-reps').value;
+                addSetRow(weight, reps);
+            });
+        }
+        
+        // Kaydetme
+        saveLogBtn.addEventListener('click', function() {
+            const exercise = exerciseName.value;
+            const date = document.getElementById('workoutDate').value;
+            const notes = document.getElementById('notes').value;
+            
+            // Set verilerini topla
+            const sets = [];
+            const setRows = setsContainer.querySelectorAll('.set-row');
+            setRows.forEach(row => {
+                const weight = row.querySelector('.set-weight').value;
+                const reps = row.querySelector('.set-reps').value;
+                if (weight && reps) {
+                    sets.push({ weight: parseFloat(weight), reps: parseInt(reps) });
+                }
+            });
+            
+            if (sets.length === 0) {
+                showNotification('Lütfen en az bir set ekleyin!', 'error');
+                return;
+            }
+            
+            // Verileri kaydet
+            if (!workoutData[exercise]) {
+                workoutData[exercise] = [];
+            }
+            
+            workoutData[exercise].push({
+                date: date,
+                sets: sets,
+                notes: notes
+            });
+            
+            // Bildirim göster
+            showNotification(`${exercise} egzersizi başarıyla kaydedildi!`);
+            
+            // Modalı kapat
+            logModal.style.display = 'none';
+            
+            // Setleri sıfırla
+            setsContainer.innerHTML = '';
+            addSetRow();
+        });
+        
+        // Kullanıcı bilgilerini güncelleme
+        saveUserBtn.addEventListener('click', function() {
+            userData.name = userNameInput.value;
+            userData.level = userLevelSelect.value;
+            userData.weight = parseFloat(userWeightInput.value) || 0;
+            userData.initialWeight = parseFloat(initialWeightInput.value) || 0;
+            userData.benchPress = parseFloat(userBenchInput.value) || 0;
+            userData.squat = parseFloat(userSquatInput.value) || 0;
+            
+            // UI güncelleme
+            updateUserStats();
+            
+            // Grafikleri yenile
+            initCharts();
+            
+            // Hedefleri güncelle
+            const weightGoal = goals.find(g => g.name === 'Vücut Ağırlığı Hedefi');
+            if (weightGoal) {
+                weightGoal.current = userData.weight;
+            }
+            
+            const benchGoal = goals.find(g => g.name === 'Bench Press Hedefi');
+            if (benchGoal) {
+                benchGoal.current = userData.benchPress;
+            }
+            
+            renderGoals();
+            
+            // Modal kapat
+            userModal.style.display = 'none';
+            
+            // Bilgilendirme
+            showNotification('Profil bilgileriniz güncellendi!');
+        });
+        
+        // Kullanıcı istatistiklerini güncelle
+        function updateUserStats() {
+            document.getElementById('userName').textContent = userData.name || "Kullanıcı Adı";
+            document.getElementById('userLevel').textContent = `Seviye: ${userData.level}`;
+            document.getElementById('userWeightStat').textContent = `${userData.weight} kg`;
+            document.getElementById('completedWorkoutStat').textContent = userData.completedWorkouts;
+            document.getElementById('streakStat').textContent = userData.streak;
+            
+            const muscleGain = userData.weight - userData.initialWeight;
+            document.getElementById('muscleGainStat').textContent = `${muscleGain > 0 ? '+' : ''}${muscleGain.toFixed(1)} kg`;
+            
+            // Haftalık ilerleme
+            const completedCount = document.getElementById('completedCount');
+            document.getElementById('weekProgressFill').style.width = `${(parseInt(completedCount.textContent) / 5) * 100}%`;
+        }
+        
+        // Besin tamamlama
+        document.querySelectorAll('.complete-food').forEach(button => {
+            button.addEventListener('click', function() {
+                this.classList.toggle('completed');
+                const food = this.getAttribute('data-food');
+                
+                if(this.classList.contains('completed')) {
+                    showNotification(`${foodDatabase[food].name} tüketimi tamamlandı`);
+                } else {
+                    showNotification(`${foodDatabase[food].name} tüketimi iptal edildi`, 'warning');
+                }
+            });
+        });
+        
+        // Besin bilgilerini gösterme
+        document.querySelectorAll('.food-info').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const food = this.getAttribute('data-food');
+                const info = foodDatabase[food];
+                
+                if(info) {
+                    showNotification(info.details, 'info');
+                }
+            });
+        });
+        
+        // Takvim yılı değiştirme
+        document.getElementById('prevMonthBtn').addEventListener('click', function() {
+            // Gerçek uygulamada burada tarih değişimi yapılır
+            generateCalendar();
+        });
+        
+        document.getElementById('nextMonthBtn').addEventListener('click', function() {
+            // Gerçek uygulamada burada tarih değişimi yapılır
+            generateCalendar();
+        });
+        
+        // Vücut ölçülerini kaydet
+        document.getElementById('saveMeasurementsBtn').addEventListener('click', function() {
+            bodyMeasurements = {
+                chest: document.getElementById('chestMeasurement').value || 0,
+                arm: document.getElementById('armMeasurement').value || 0,
+                waist: document.getElementById('waistMeasurement').value || 0,
+                hip: document.getElementById('hipMeasurement').value || 0,
+                leg: document.getElementById('legMeasurement').value || 0,
+                calf: document.getElementById('calfMeasurement').value || 0
+            };
+            
+            // Grafikleri güncelle
+            initCharts();
+            
+            showNotification('Vücut ölçüleriniz kaydedildi!');
+        });
+        
+        // Yeni hedef formunu göster
+        document.getElementById('addGoalBtnMain').addEventListener('click', function() {
+            document.getElementById('goalForm').style.display = 'block';
+            document.getElementById('saveGoalBtn').innerHTML = '<i class="fas fa-save"></i> Kaydet';
+            document.getElementById('saveGoalBtn').removeAttribute('data-id');
+            
+            // Formu sıfırla
+            document.getElementById('goalName').value = '';
+            document.getElementById('currentValue').value = '';
+            document.getElementById('targetValue').value = '';
+        });
+        
+        // Yeni hedef kaydet
+        document.getElementById('saveGoalBtn').addEventListener('click', function() {
+            const name = document.getElementById('goalName').value;
+            const current = parseFloat(document.getElementById('currentValue').value) || 0;
+            const target = parseFloat(document.getElementById('targetValue').value) || 0;
+            const goalId = this.getAttribute('data-id');
+            
+            if (!name || !target) {
+                showNotification('Lütfen hedef adı ve hedef değerini girin!', 'error');
+                return;
+            }
+            
+            if (goalId) {
+                // Update existing goal
+                const goal = goals.find(g => g.id == goalId);
+                if (goal) {
+                    goal.name = name;
+                    goal.current = current;
+                    goal.target = target;
+                }
+            } else {
+                // Add new goal
+                goals.push({
+                    id: Date.now(),
+                    name: name,
+                    current: current,
+                    target: target
+                });
+            }
+            
+            renderGoals();
+            document.getElementById('goalForm').style.display = 'none';
+            showNotification(goalId ? 'Hedef başarıyla güncellendi!' : 'Yeni hedef başarıyla eklendi!');
+        });
+        
+        // Günlük kalori hesapla
+        document.querySelectorAll('.diet-item input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                let totalCalories = 0;
+                
+                if (document.getElementById('breakfast').checked) totalCalories += 800;
+                if (document.getElementById('lunch').checked) totalCalories += 1000;
+                if (document.getElementById('dinner').checked) totalCalories += 1200;
+                if (document.getElementById('snacks').checked) totalCalories += 500;
+                
+                document.getElementById('totalCalories').textContent = totalCalories;
+            });
+        });
+        
+        // Dışarı tıklayınca modal kapatma
+        window.addEventListener('click', function(event) {
+            if (event.target === logModal) {
+                logModal.style.display = 'none';
+            }
+            if (event.target === userModal) {
+                userModal.style.display = 'none';
+            }
+        });
+        
+        // Günü tamamla butonu
+        document.getElementById('completeDayBtn').addEventListener('click', function() {
+            showNotification('Gün başarıyla tamamlandı!');
+        });
+        
+        // Sayfa yüklendiğinde
+        window.addEventListener('load', function() {
+            // Kullanıcı verilerini yükle
+            updateUserStats();
+            
+            // Grafikleri başlat
+            initCharts();
+            
+            // Takvimi oluştur
+            generateCalendar();
+            
+            // Sıradaki antrenmanı hesapla
+            calculateNextWorkout();
+            
+            // Hedefleri render et
+            renderGoals();
+            
+            // İlk seti ekle
+            addSetRow();
+            
+            // Set tarihi bugün olarak ayarla
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            document.getElementById('workoutDate').value = formattedDate;
+            
+            // Vücut ölçülerini inputlara yerleştir
+            document.getElementById('chestMeasurement').value = bodyMeasurements.chest;
+            document.getElementById('armMeasurement').value = bodyMeasurements.arm;
+            document.getElementById('waistMeasurement').value = bodyMeasurements.waist;
+            document.getElementById('hipMeasurement').value = bodyMeasurements.hip;
+            document.getElementById('legMeasurement').value = bodyMeasurements.leg;
+            document.getElementById('calfMeasurement').value = bodyMeasurements.calf;
+            
+            // Bugünün tarihini ayarla
+            document.getElementById('dailyDate').textContent = today.toLocaleDateString('tr-TR');
+        });
+    </script>
+</body>
+</html>
