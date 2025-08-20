@@ -2637,23 +2637,48 @@
             tab.addEventListener('click', function(e) {
                 e.preventDefault();
                 
-                // Remove active class from all tabs
-                document.querySelectorAll('nav a').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                
-                // Add active class to clicked tab
-                this.classList.add('active');
                 const target = this.getAttribute('data-target');
-                document.getElementById(target).classList.add('active');
+                console.log(`📋 Tab değiştiriliyor: ${target}`);
                 
-                // Takvimi oluştur
-                if(target === 'training-calendar') {
-                    generateCalendar();
-                }
-                
-                // Hedefleri yükle
-                if(target === 'goals') {
-                    renderGoals();
+                try {
+                    // Remove active class from all tabs
+                    document.querySelectorAll('nav a').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    const targetElement = document.getElementById(target);
+                    if (targetElement) {
+                        targetElement.classList.add('active');
+                        console.log(`✅ Tab başarıyla açıldı: ${target}`);
+                    } else {
+                        console.error(`❌ Tab elementi bulunamadı: ${target}`);
+                        showNotification(`Tab açılırken hata: ${target}`, 'error');
+                        return;
+                    }
+                    
+                    // Takvimi oluştur
+                    if(target === 'training-calendar') {
+                        console.log('📅 Antrenman takvimi oluşturuluyor...');
+                        generateCalendar();
+                    }
+                    
+                    // Hedefleri yükle
+                    if(target === 'goals') {
+                        console.log('🎯 Hedefler yükleniyor...');
+                        renderGoals();
+                    }
+                    
+                    // Dashboard yüklendiğinde grafikleri güncelle
+                    if(target === 'dashboard') {
+                        console.log('📊 Dashboard grafikleri güncelleniyor...');
+                        setTimeout(() => updateChartsWithRealData(), 100);
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Tab değiştirme hatası:', error);
+                    showNotification('Tab açılırken bir hata oluştu!', 'error');
                 }
             });
         });
@@ -3173,26 +3198,51 @@
         });
         
         // Kullanıcı bilgilerine tıklama
-        userInfo.addEventListener('click', function() {
-            // Mevcut verileri inputlara doldur
-            userNameInput.value = userData.name;
-            userWeightInput.value = userData.weight;
-            initialWeightInput.value = userData.initialWeight;
-            userBenchInput.value = userData.benchPress;
-            userSquatInput.value = userData.squat;
-            userLevelSelect.value = userData.level;
-            
-            userModal.style.display = 'flex';
-        });
+        if (userInfo) {
+            userInfo.addEventListener('click', function() {
+                console.log('👤 Kullanıcı profil modalı açılıyor...');
+                try {
+                    // Mevcut verileri inputlara doldur
+                    if (userNameInput) userNameInput.value = userData.name || '';
+                    if (userWeightInput) userWeightInput.value = userData.weight || '';
+                    if (initialWeightInput) initialWeightInput.value = userData.initialWeight || '';
+                    if (userBenchInput) userBenchInput.value = userData.benchPress || '';
+                    if (userSquatInput) userSquatInput.value = userData.squat || '';
+                    if (userLevelSelect) userLevelSelect.value = userData.level || 'Orta';
+                    
+                    if (userModal) {
+                        userModal.style.display = 'flex';
+                        console.log('✅ Profil modalı başarıyla açıldı');
+                    } else {
+                        console.error('❌ userModal elementi bulunamadı!');
+                    }
+                } catch (error) {
+                    console.error('❌ Profil modalı açılırken hata:', error);
+                    showNotification('Profil bilgileri açılırken bir hata oluştu!', 'error');
+                }
+            });
+        } else {
+            console.error('❌ userInfo elementi bulunamadı!');
+        }
         
         // Modal kapatma
-        closeModal.addEventListener('click', function() {
-            logModal.style.display = 'none';
-        });
+        if (closeModal && logModal) {
+            closeModal.addEventListener('click', function() {
+                logModal.style.display = 'none';
+                console.log('✅ Log modalı kapatıldı');
+            });
+        } else {
+            console.error('❌ closeModal veya logModal elementi bulunamadı!');
+        }
         
-        closeUserModal.addEventListener('click', function() {
-            userModal.style.display = 'none';
-        });
+        if (closeUserModal && userModal) {
+            closeUserModal.addEventListener('click', function() {
+                userModal.style.display = 'none';
+                console.log('✅ Kullanıcı modalı kapatıldı');
+            });
+        } else {
+            console.error('❌ closeUserModal veya userModal elementi bulunamadı!');
+        }
         
         // Set ekleme
         addSetBtn.addEventListener('click', function() {
@@ -3471,7 +3521,9 @@
         }
 
         // Sayfa yüklendiğinde - Gelişmiş başlatma sistemi
-        window.addEventListener('load', function() {
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM yüklendi, uygulama başlatılıyor...');
+            
             // 1. Veriyi localStorage'dan yükle
             DataManager.loadData();
             
@@ -3533,8 +3585,70 @@
             const dailyDateElement = document.getElementById('dailyDate');
             if (dailyDateElement) dailyDateElement.textContent = today.toLocaleDateString('tr-TR');
             
+            // 11. DOM elementlerini kontrol et ve hata durumlarını yakala
+            checkDOMElements();
+            
+            // 12. Tab içeriklerinin görünür olduğunu kontrol et
+            checkTabVisibility();
+            
             console.log('🎉 Fitness App başarıyla yüklendi!');
         });
+        
+        // DOM elementlerini kontrol eden yardımcı fonksiyon
+        function checkDOMElements() {
+            const criticalElements = [
+                'userInfo', 'userModal', 'logModal', 'closeUserModal', 'closeModal',
+                'saveUserBtn', 'userNameInput', 'userLevelSelect'
+            ];
+            
+            criticalElements.forEach(elementId => {
+                const element = document.getElementById(elementId);
+                if (!element) {
+                    console.error(`❌ Kritik element bulunamadı: ${elementId}`);
+                } else {
+                    console.log(`✅ Element bulundu: ${elementId}`);
+                }
+            });
+        }
+        
+        // Tab görünürlüğünü kontrol eden fonksiyon
+        function checkTabVisibility() {
+            const tabContents = [
+                'dashboard', 'training-calendar', 'diet', 'body-measurements', 'goals', 'program'
+            ];
+            
+            console.log('🔍 Tab içerikleri kontrol ediliyor...');
+            
+            tabContents.forEach(tabId => {
+                const tabElement = document.getElementById(tabId);
+                if (tabElement) {
+                    const isActive = tabElement.classList.contains('active');
+                    const displayStyle = window.getComputedStyle(tabElement).display;
+                    console.log(`📋 ${tabId}: Aktif=${isActive}, Display=${displayStyle}`);
+                    
+                    // Eğer dashboard aktif değilse ve hiçbir tab aktif değilse, dashboard'ı aktif yap
+                    if (tabId === 'dashboard' && !isActive) {
+                        const hasActiveTab = tabContents.some(id => {
+                            const el = document.getElementById(id);
+                            return el && el.classList.contains('active');
+                        });
+                        
+                        if (!hasActiveTab) {
+                            console.log('⚠️ Hiçbir tab aktif değil, dashboard aktif yapılıyor...');
+                            tabElement.classList.add('active');
+                            
+                            // İlgili nav linkini de aktif yap
+                            const navLink = document.querySelector('nav a[data-target="dashboard"]');
+                            if (navLink) {
+                                navLink.classList.add('active');
+                            }
+                        }
+                    }
+                } else {
+                    console.error(`❌ Tab içeriği bulunamadı: ${tabId}`);
+                }
+            });
+        }
     </script>
 </body>
 </html>
