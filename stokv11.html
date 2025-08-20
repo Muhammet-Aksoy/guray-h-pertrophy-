@@ -2198,7 +2198,36 @@
     </div>
     
     <script>
-        // Tüm verileri sıfırla
+        // Veri Yönetimi Sistemi - LocalStorage ile kalıcı veri saklama
+        class DataManager {
+            static loadData() {
+                const saved = localStorage.getItem('fitnessAppData');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    Object.assign(userData, data.userData || userData);
+                    Object.assign(bodyMeasurements, data.bodyMeasurements || bodyMeasurements);
+                    goals = data.goals || goals;
+                    completedDays = data.completedDays || [];
+                    workoutData = data.workoutData || {};
+                    calendarData = data.calendarData || {};
+                }
+            }
+            
+            static saveData() {
+                const data = {
+                    userData,
+                    bodyMeasurements,
+                    goals,
+                    completedDays,
+                    workoutData,
+                    calendarData,
+                    lastSaved: new Date().toISOString()
+                };
+                localStorage.setItem('fitnessAppData', JSON.stringify(data));
+            }
+        }
+
+        // Kullanıcı verileri
         let userData = {
             name: "Kerem Gök",
             level: "Orta",
@@ -2207,7 +2236,10 @@
             benchPress: 90,
             squat: 120,
             completedWorkouts: 0,
-            streak: 0
+            streak: 0,
+            currentWeek: 1,
+            totalCalories: 0,
+            dailyCalorieGoal: 3500
         };
 
         // Takvim verileri
@@ -2236,6 +2268,43 @@
         
         // Tamamlanan günler
         let completedDays = [];
+
+        // Workout programı tanımlaması
+        const workoutProgram = {
+            'monday': {
+                name: 'Göğüs & Triceps',
+                exercises: ['Bench Press', 'Incline Dumbbell Press', 'Dips', 'Tricep Pushdowns', 'Overhead Tricep Extension'],
+                icon: 'fa-dumbbell'
+            },
+            'tuesday': {
+                name: 'Sırt & Biceps', 
+                exercises: ['Barbell Row', 'Lat Pulldowns', 'Cable Rows', 'Barbell Curls', 'Hammer Curls'],
+                icon: 'fa-hand-fist'
+            },
+            'wednesday': {
+                name: 'Bacak',
+                exercises: ['Squats', 'Romanian Deadlifts', 'Leg Press', 'Leg Curls', 'Calf Raises'],
+                icon: 'fa-running'
+            },
+            'friday': {
+                name: 'Omuz & Abs',
+                exercises: ['Military Press', 'Lateral Raises', 'Rear Delt Flyes', 'Planks', 'Russian Twists'],
+                icon: 'fa-fire'
+            },
+            'saturday': {
+                name: 'Kol Odaklı',
+                exercises: ['Close Grip Bench', 'Barbell Curls', 'Tricep Dips', 'Cable Curls', 'Diamond Push-ups'],
+                icon: 'fa-fist-raised'
+            }
+        };
+
+        // Günlük kalori hedefleri
+        let dailyNutritionGoals = {
+            calories: 3500,
+            protein: 140,
+            carbs: 350,
+            fat: 120
+        };
         
         // Besin verileri
         const foodDatabase = {
@@ -2278,6 +2347,198 @@
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
+        }
+
+        // Workout Yönetimi Sistemi
+        class WorkoutManager {
+            static completeDay(dayId) {
+                const today = new Date().toISOString().split('T')[0];
+                
+                if (!completedDays.includes(dayId)) {
+                    completedDays.push(dayId);
+                    userData.completedWorkouts++;
+                    userData.streak = this.calculateStreak();
+                    
+                    // Takvime kaydet
+                    calendarData[today] = {
+                        type: 'workout',
+                        completed: true,
+                        dayId: dayId
+                    };
+                    
+                    // UI güncelle
+                    this.updateWorkoutUI(dayId);
+                    this.updateProgressStats();
+                    
+                    // Veriyi kaydet
+                    DataManager.saveData();
+                    
+                    showNotification(`${dayId} antrenmanı tamamlandı! 🎉`, 'success');
+                    
+                    // Hedefleri güncelle
+                    this.updateGoalProgress();
+                } else {
+                    showNotification('Bu antrenman zaten tamamlanmış!', 'warning');
+                }
+            }
+            
+            static updateWorkoutUI(dayId) {
+                const dayElement = document.getElementById(dayId);
+                if (dayElement) {
+                    dayElement.classList.add('completed');
+                    const completeBtn = dayElement.querySelector('.complete-btn');
+                    if (completeBtn) {
+                        completeBtn.innerHTML = '<i class="fas fa-check"></i> Tamamlandı';
+                        completeBtn.style.background = 'var(--success)';
+                        completeBtn.style.color = 'var(--dark)';
+                    }
+                }
+            }
+            
+            static calculateStreak() {
+                // Son 7 günde kaç gün antrenman yapıldığını hesapla
+                const today = new Date();
+                let streak = 0;
+                
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date(today);
+                    date.setDate(today.getDate() - i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    
+                    if (calendarData[dateStr] && calendarData[dateStr].completed) {
+                        streak++;
+                    } else {
+                        break;
+                    }
+                }
+                
+                return streak;
+            }
+            
+            static updateProgressStats() {
+                // Dashboard istatistiklerini güncelle
+                const completedElement = document.getElementById('completedCount');
+                const streakElement = document.getElementById('streakCount');
+                const weekProgressElement = document.getElementById('weekProgressFill');
+                
+                if (completedElement) completedElement.textContent = userData.completedWorkouts;
+                if (streakElement) streakElement.textContent = userData.streak;
+                
+                // Haftalık ilerleme (5 günden kaç tanesi tamamlandı)
+                const weeklyProgress = Math.min((userData.completedWorkouts % 5) / 5 * 100, 100);
+                if (weekProgressElement) {
+                    weekProgressElement.style.width = weeklyProgress + '%';
+                }
+            }
+            
+            static updateGoalProgress() {
+                // Antrenman devamlılığı hedefini güncelle
+                const continuityGoal = goals.find(g => g.id === 4);
+                if (continuityGoal) {
+                    continuityGoal.current = userData.completedWorkouts;
+                }
+                renderGoals();
+            }
+            
+            static getNextWorkout() {
+                const workoutDays = ['monday', 'tuesday', 'wednesday', 'friday', 'saturday'];
+                const today = new Date().getDay(); // 0 = Pazar, 1 = Pazartesi, ...
+                const dayMap = {1: 'monday', 2: 'tuesday', 3: 'wednesday', 5: 'friday', 6: 'saturday'};
+                
+                // Bugünkü antrenman tamamlandı mı kontrol et
+                const todayKey = dayMap[today];
+                if (todayKey && !completedDays.includes(todayKey)) {
+                    return workoutProgram[todayKey];
+                }
+                
+                // Sonraki günü bul
+                for (let i = 1; i <= 7; i++) {
+                    const nextDay = (today + i) % 7;
+                    const nextDayKey = dayMap[nextDay];
+                    if (nextDayKey && !completedDays.includes(nextDayKey)) {
+                        return workoutProgram[nextDayKey];
+                    }
+                }
+                
+                return { name: 'Tüm antrenmanlar tamamlandı!', exercises: [] };
+            }
+        }
+
+        // Beslenme Yönetimi Sistemi
+        class NutritionManager {
+            static calculateDailyCalories() {
+                let totalCalories = 0;
+                const checkboxes = document.querySelectorAll('#nutrition input[type="checkbox"]:checked');
+                
+                checkboxes.forEach(checkbox => {
+                    const foodItem = checkbox.closest('.diet-item');
+                    const calorieText = foodItem.querySelector('.diet-calories').textContent;
+                    const calories = parseInt(calorieText.match(/\d+/)[0]);
+                    totalCalories += calories;
+                });
+                
+                userData.totalCalories = totalCalories;
+                this.updateNutritionUI();
+                DataManager.saveData();
+            }
+            
+            static updateNutritionUI() {
+                const progressElement = document.querySelector('#nutrition .progress-fill');
+                const calorieElement = document.querySelector('#nutrition .total-calories');
+                
+                if (progressElement) {
+                    const progress = Math.min((userData.totalCalories / userData.dailyCalorieGoal) * 100, 100);
+                    progressElement.style.width = progress + '%';
+                }
+                
+                if (calorieElement) {
+                    calorieElement.textContent = `${userData.totalCalories}/${userData.dailyCalorieGoal} kcal`;
+                }
+            }
+            
+            static resetDailyNutrition() {
+                userData.totalCalories = 0;
+                const checkboxes = document.querySelectorAll('#nutrition input[type="checkbox"]');
+                checkboxes.forEach(checkbox => checkbox.checked = false);
+                this.updateNutritionUI();
+                DataManager.saveData();
+            }
+        }
+
+        // Tarih Yönetimi Sistemi
+        class DateManager {
+            static getCurrentWeekDay() {
+                const today = new Date().getDay();
+                const dayMap = {1: 'monday', 2: 'tuesday', 3: 'wednesday', 5: 'friday', 6: 'saturday'};
+                return dayMap[today] || null;
+            }
+            
+            static updateCurrentDayHighlight() {
+                // Tüm günlerden aktif sınıfı kaldır
+                document.querySelectorAll('.workout-day').forEach(day => {
+                    day.classList.remove('current-day');
+                });
+                
+                // Bugünkü günü vurgula
+                const today = this.getCurrentWeekDay();
+                if (today) {
+                    const todayElement = document.getElementById(today);
+                    if (todayElement) {
+                        todayElement.classList.add('current-day');
+                    }
+                }
+            }
+            
+            static updateNextWorkoutInfo() {
+                const nextWorkout = WorkoutManager.getNextWorkout();
+                const titleElement = document.getElementById('nextWorkoutTitle');
+                const timeElement = document.getElementById('nextWorkoutTime');
+                const durationElement = document.getElementById('nextWorkoutDuration');
+                
+                if (titleElement) titleElement.textContent = nextWorkout.name;
+                if (timeElement) timeElement.textContent = '09:00';
+                if (durationElement) durationElement.textContent = '60 dk';
+            }
         }
 
         // Tab switching functionality
